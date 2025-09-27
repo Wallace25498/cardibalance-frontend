@@ -41,33 +41,54 @@ O aplicativo oferece:
 ## ⚙️ Instalação e Execução
 
 ```bash
-# Clonar repositório
-git clone https://github.com/seu-org/cardibalance-frontend.git
+# 1. Clonar o repositório
+git clone https://github.com/seu-usuario/seu-repo.git
 cd cardibalance-frontend
 
-# Instalar dependências
+# 2. Instalar dependências
+npm install
 
-
-# Executar no emulador/dispositivo
+# 3. Rodar no emulador/dispositivo, escaneie o QR Code pelo app Expo GO
 npx expo start
-```
+
+# 4. Criar nova branch
+git checkout -b feature/nome-da-feature
+
+# 5. Fazer alterações
+git add .
+git commit -m "feat: descreve a alteração"
+
+# 6. Enviar branch
+git push origin feature/nome-da-feature
+
+# 7. Criar Pull Request no GitHub
+
+# 8. (Opcional) Gerar build
+eas login
+eas build:configure
+eas build -p android
+
+# Clonar repositório
 
 ---
+
 
 ## 📂 Estrutura do Projeto
 
 ```
+
 cardibalance-frontend/
- ├── lib/
- │   ├── screens/       # Telas principais (login, dashboard, histórico, etc.)
- │   ├── widgets/       # Componentes reutilizáveis
- │   ├── models/        # Modelos de dados
- │   ├── services/      # Comunicação com a API
- │   ├── providers/     # Gerenciamento de estado
- │   └── utils/         # Funções auxiliares
- ├── assets/            # Ícones, imagens e fontes
- ├── pubspec.yaml       # Dependências
- └── test/              # Testes unitários
+├── lib/
+│ ├── screens/ # Telas principais (login, dashboard, histórico, etc.)
+│ ├── widgets/ # Componentes reutilizáveis
+│ ├── models/ # Modelos de dados
+│ ├── services/ # Comunicação com a API
+│ ├── providers/ # Gerenciamento de estado
+│ └── utils/ # Funções auxiliares
+├── assets/ # Ícones, imagens e fontes
+├── pubspec.yaml # Dependências
+└── test/ # Testes unitários
+
 ```
 
 ---
@@ -92,3 +113,4 @@ cardibalance-frontend/
 ---
 
 👨‍💻 Desenvolvido com ❤️ para facilitar a vida de quem precisa monitorar sua saúde todos os dias.
+```
