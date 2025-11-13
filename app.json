@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "3c091044-08b5-4fc1-a7a1-a9d2afe5ae0a"
+      }
+    },
+    "android": {
+      "package": "com.andressavarela.cardibalancefrontend"
+    }
+  }
+}
