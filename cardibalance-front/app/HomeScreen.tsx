@@ -1,10 +1,12 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
+import { useRouter } from 'expo-router'
 import styles from './styles/HomeScreen.styles'
 
 // Tela inicial do aplicativo, todos os textos como placeholders por enquanto
 
 export default function HomeScreen() {
+  const router = useRouter()
   return (
     <View style={styles.container}>
       {/* Cabeçalho com avatar e saudação */}
@@ -30,10 +32,16 @@ export default function HomeScreen() {
       {/* Seção Ações */}
       <Text style={styles.sectionTitle}>Ações</Text>
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.primaryButton}>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => router.push('/HealthRegisterScreen')}
+        >
           <Text style={styles.primaryButtonText}>Registrar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.secondaryButton}>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => router.push('/PatientDataScreen')}
+        >
           <Text style={styles.secondaryButtonText}>Relatórios</Text>
         </TouchableOpacity>
       </View>

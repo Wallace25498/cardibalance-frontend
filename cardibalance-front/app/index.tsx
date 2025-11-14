@@ -5,10 +5,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
 // Importar suas telas
 import HomeScreen from './HomeScreen'
 // import RegisterScreen from './RegisterScreen'
-import PatientDataScreen from './PatientDataScreen'
+// import PatientDataScreen from './PatientDataScreen'
 import HistoryScreen from './HistoryScreen'
 import DicasScreen from './DicasScreen'
-// import DicasScreen from './DicasScreen' // Crie essa tela depois
+import HealthRegisterScreen from './HealthRegisterScreen'
 
 const Tab = createBottomTabNavigator()
 
@@ -52,7 +52,7 @@ export default function Index() {
       />
       <Tab.Screen
         name="Registrar"
-        component={PatientDataScreen}
+        component={HealthRegisterScreen}
         options={{
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
