@@ -14,7 +14,8 @@ export default function DicasScreen() {
       id: '2',
       icon: 'walk',
       title: 'Exercícios',
-      description: 'Pratique 30 minutos de atividade física diária'
+      description:
+        'Pratique 30 minutos de atividade física diária, com a intensidade recomendada pelo seu médico'
     },
     {
       id: '3',
