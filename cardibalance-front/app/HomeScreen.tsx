@@ -40,7 +40,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.secondaryButton}
-          onPress={() => router.push('/PatientDataScreen')}
+          onPress={() => router.push('/HistoryScreen')}
         >
           <Text style={styles.secondaryButtonText}>Relatórios</Text>
         </TouchableOpacity>

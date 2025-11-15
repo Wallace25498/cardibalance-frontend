@@ -8,11 +8,14 @@ import {
 import { AntDesign } from '@expo/vector-icons'
 import axios from 'axios'
 import styles from './styles/LoginPage.styles'
+import { useRouter } from 'expo-router'
+
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleLogin = async () => {
     if (!email || !senha) {
@@ -72,9 +75,11 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       {/* Cadastro */}
+      <TouchableOpacity onPress={() => router.push('/RegisterScreen')}>
       <Text style={styles.register}>
         Ainda não tem uma conta? <Text style={styles.link}>Cadastre-se</Text>
       </Text>
+    </TouchableOpacity>
 
       {/* Login com Google */}
       <TouchableOpacity style={styles.googleButton}>

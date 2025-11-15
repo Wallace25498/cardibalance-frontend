@@ -7,8 +7,10 @@ import {
   StyleSheet
 } from 'react-native'
 import styles from './styles/RegisterScreen.styles'
+import { useRouter } from 'expo-router'
 
 export default function RegisterScreen() {
+  const router = useRouter()
   return (
     <View style={styles.container}>
       {/* Título */}
@@ -51,9 +53,11 @@ export default function RegisterScreen() {
       </TouchableOpacity>
 
       {/* Link para login */}
+      <TouchableOpacity onPress={() => router.push('/LoginPage')}>
       <Text style={styles.login}>
         Já possui uma conta? <Text style={styles.link}>Entre</Text>
       </Text>
+      </TouchableOpacity>
     </View>
   )
 }
