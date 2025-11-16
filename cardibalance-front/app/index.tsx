@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState,useEffect } from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
@@ -9,10 +9,21 @@ import HomeScreen from './HomeScreen'
 import HistoryScreen from './HistoryScreen'
 import DicasScreen from './DicasScreen'
 import HealthRegisterScreen from './HealthRegisterScreen'
-
+import { useRouter } from 'expo-router'
+import { useAuth } from "./AuthContext"
 const Tab = createBottomTabNavigator()
 
 export default function Index() {
+ 
+//abrir tela de login se o usuário não estiver logado 
+/*const router = useRouter();
+const { logged, logout } = useAuth();
+  useEffect(() => {
+    if (!logged) {
+      router.push("/LoginPage");
+    }
+  }, [logged]); */
+ 
   return (
     <Tab.Navigator
       screenOptions={{

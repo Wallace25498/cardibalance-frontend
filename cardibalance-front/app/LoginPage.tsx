@@ -9,6 +9,7 @@ import { AntDesign } from '@expo/vector-icons'
 import axios from 'axios'
 import styles from './styles/LoginPage.styles'
 import { useRouter } from 'expo-router'
+import { useAuth } from "./AuthContext"
 
 
 export default function LoginScreen() {
@@ -16,6 +17,7 @@ export default function LoginScreen() {
   const [senha, setSenha] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !senha) {
@@ -32,6 +34,8 @@ export default function LoginScreen() {
 
       console.log('Login bem-sucedido:', response.data)
       alert('Login OK!')
+      login();
+      router.replace("/");
       // aqui você pode salvar o token e navegar para a tela principal
       // await AsyncStorage.setItem('token', response.data.token)
     } catch (error: any) {
