@@ -97,6 +97,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#f9f9f9',
     color: '#333',
+  },
+  datepicker: {
+    height: 120 ,
+    marginTop: -10,
+
   }
  
 })

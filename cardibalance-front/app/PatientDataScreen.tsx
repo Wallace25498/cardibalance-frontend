@@ -13,16 +13,18 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 export default function FeaturesScreen() {
-  {/*date timepicker */}
+  {/*date timepicker */ }
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
-  const toggleDatePicker = () => {
-    setShowPicker(!showPicker); }
   const [dateOfBirth, setDateOfBirth] = useState('');
-  {/*Variavel de armazenamento de genero */}
+  {/*Variavel de armazenamento de genero */ }
   const [selectedGender, setSelectedGender] = useState('');
 
-{/*funções para o date timepicker */}
+  {/*funções para o date timepicker */ }
+  const toggleDatePicker = () => {
+    setShowPicker(!showPicker);
+  }
+
   const onChange = (event: any, selectedDate?: Date) => {
     if (event.type === "set") {
       const currentDate = selectedDate || date;
@@ -30,12 +32,27 @@ export default function FeaturesScreen() {
 
       if (Platform.OS === "android") {
         toggleDatePicker();
-        setDateOfBirth(currentDate.toLocaleDateString());
+        setDateOfBirth(formateDate(date));
       }
     } else {
       toggleDatePicker();
     }
   };
+  const confirmIOSDate = () => {
+    setDateOfBirth(formateDate(date));
+    toggleDatePicker();
+  };
+
+  //formatar data e retornar a string: dd/mm/aa
+  const formateDate = (rawDate: string | number | Date) => {
+    let date = new Date(rawDate);
+
+    let ano = date.getFullYear();
+    let mes = date.getMonth() + 1;
+    let dia = date.getDate();
+    return `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${ano}`
+  }
+
   return (
     <View style={styles.container}>
       {/* Título */}
@@ -79,16 +96,7 @@ export default function FeaturesScreen() {
       {/* Data de Nascimento */}
 
       <View style={styles.date}>
-        <Text style={styles.dateTitle}>Data de Nascimento:</Text> 
-
-        {!showPicker && (<Pressable onPress={toggleDatePicker}><TextInput
-          value={dateOfBirth}
-          onChangeText={setDateOfBirth}
-          placeholder='dd/mm/aa'
-          style={styles.inputdate}
-          placeholderTextColor="grey"
-          editable={false}
-        /></Pressable>)}
+        <Text style={styles.dateTitle}>Data de Nascimento:</Text>
 
         {showPicker && (
           <DateTimePicker
@@ -96,8 +104,35 @@ export default function FeaturesScreen() {
             display="spinner"
             value={date}
             onChange={onChange}
+            style={styles.datepicker}
           />
         )}
+        {showPicker && Platform.OS === "ios" && (
+          <View>
+            <TouchableOpacity
+              onPress={toggleDatePicker}>
+              <Text>Cancelar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={confirmIOSDate}>
+              <Text>Confirmar</Text>
+            </TouchableOpacity>
+          </View>
+
+
+        )}
+        {!showPicker && (<Pressable onPress={toggleDatePicker}><TextInput
+          value={dateOfBirth}
+          onChangeText={setDateOfBirth}
+          placeholder='dd/mm/aa'
+          style={styles.inputdate}
+          placeholderTextColor="grey"
+          editable={false}
+          onPressIn={toggleDatePicker}
+        /></Pressable>)}
+
+
       </View>
 
       {/* Botão de Confirmar */}
