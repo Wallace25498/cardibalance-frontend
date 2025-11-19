@@ -9,7 +9,7 @@ import {
 import { ChevronLeft, Check } from 'lucide-react-native'
 import { styles } from './styles/HealthRegisterScreen.styles'
 import axios from 'axios'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+
 
 interface GlicoseData {
   value: string
@@ -75,19 +75,15 @@ const HealthRegisterScreen: React.FC = () => {
       })
     }
 
-    try {
-      const token = await AsyncStorage.getItem('token')
-      await axios.post('http://localhost:8080/medicao', dados, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+        try {
+      await axios.post('http://localhost:8080/medicao', dados)
       alert('Dados salvos com sucesso!')
     } catch (error: any) {
       alert('Erro ao salvar dados!')
       console.error(error)
     }
   }
+
 
   return (
     <View style={styles.container}>

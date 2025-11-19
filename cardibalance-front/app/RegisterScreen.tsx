@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   View,
   Text,
-  TextInput,cd cardibalance-front
+  TextInput,
   TouchableOpacity
 } from 'react-native'
 import axios from 'axios'
