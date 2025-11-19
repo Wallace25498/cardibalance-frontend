@@ -33,7 +33,9 @@ export default function RegisterScreen() {
         nome,
         email,
         senha,
-        cpf
+        cpfCnpj: cpf, // nome correto
+        tipo: 'PACIENTE' // ou outro tipo conforme sua lógica
+
       })
       alert('Cadastro realizado com sucesso!')
       router.push('/LoginPage')

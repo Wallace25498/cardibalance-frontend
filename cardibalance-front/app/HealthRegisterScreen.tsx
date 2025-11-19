@@ -8,6 +8,8 @@ import {
 } from 'react-native'
 import { ChevronLeft, Check } from 'lucide-react-native'
 import { styles } from './styles/HealthRegisterScreen.styles'
+import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 interface GlicoseData {
   value: string
@@ -50,9 +52,41 @@ const HealthRegisterScreen: React.FC = () => {
     }))
   }
 
-  const handleSave = () => {
-    console.log('Salvando dados:', { glicoseData, pressaoData, selectedItems })
-    // Adicione aqui sua lógica de salvamento
+  const handleSave = async () => {
+    const dados = []
+
+    if (selectedItems.pressao) {
+      dados.push({
+        valorNum: Number(pressaoData.sistolica),
+        valorAux: Number(pressaoData.diastolica),
+        horarioMedicao: `2025-11-11T${pressaoData.hour}:${pressaoData.minute}:00-03:00[America/Sao_Paulo]`,
+        contexto: 'BP',
+        observacao: 'Medição de pressão arterial.'
+      })
+    }
+
+    if (selectedItems.glicose) {
+      dados.push({
+        valorNum: Number(glicoseData.value),
+        valorAux: 72.0, // ajuste conforme sua lógica
+        horarioMedicao: `2025-11-11T${glicoseData.hour}:${glicoseData.minute}:00-03:00[America/Sao_Paulo]`,
+        contexto: 'GLICEMIA',
+        observacao: glicoseData.fasting ? 'Glicemia em jejum.' : 'Glicemia sem jejum.'
+      })
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('token')
+      await axios.post('http://localhost:8080/medicao', dados, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      alert('Dados salvos com sucesso!')
+    } catch (error: any) {
+      alert('Erro ao salvar dados!')
+      console.error(error)
+    }
   }
 
   return (
