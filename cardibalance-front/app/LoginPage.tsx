@@ -10,6 +10,7 @@ import axios from 'axios'
 import styles from './styles/LoginPage.styles'
 import { useRouter } from 'expo-router'
 import { useAuth } from "./context/AuthContext"
+import { storageAuthSave } from '@/storage/storageAuthToken'
 
 
 export default function LoginScreen() {
@@ -34,13 +35,18 @@ export default function LoginScreen() {
 
       console.log('Login bem-sucedido:', response.data)
       alert('Login OK!')
+
       login();
+
       router.replace("/");
+
       // aqui você pode salvar o token e navegar para a tela principal
-      // await AsyncStorage.setItem('token', response.data.token)
+      await storageAuthSave(response.data.user, response.data.token)
+
     } catch (error: any) {
       console.error('Erro ao fazer login:', error.response?.data || error.message)
       alert('Credenciais inválidas')
+      
     } finally {
       setLoading(false)
     }

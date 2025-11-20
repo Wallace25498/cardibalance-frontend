@@ -9,6 +9,8 @@ import {
 import { ChevronLeft, Check } from 'lucide-react-native'
 import { styles } from './styles/HealthRegisterScreen.styles'
 import axios from 'axios'
+import { AUTH_TOKEN_STORAGE } from '@/storage/storageConfigs'
+import { storageAuthTokenGet } from '@/storage/storageAuthToken'
 
 
 interface GlicoseData {
@@ -68,19 +70,24 @@ const HealthRegisterScreen: React.FC = () => {
     if (selectedItems.glicose) {
       dados.push({
         valorNum: Number(glicoseData.value),
-        valorAux: 72.0, // ajuste conforme sua lógica
+        valorAux: 0.0, // ajuste conforme sua lógica
         horarioMedicao: `2025-11-11T${glicoseData.hour}:${glicoseData.minute}:00-03:00[America/Sao_Paulo]`,
         contexto: 'GLICEMIA',
         observacao: glicoseData.fasting ? 'Glicemia em jejum.' : 'Glicemia sem jejum.'
       })
     }
-
-        try {
-      await axios.post('http://localhost:8080/medicao', dados)
+   
+    
+    try {
+      const token = await storageAuthTokenGet();
+      await axios.post('http://127.0.0.1:8080/medicao', dados,{ headers:{ "Authorization" : `Bearer ${token}` } })
       alert('Dados salvos com sucesso!')
+    
     } catch (error: any) {
+
       alert('Erro ao salvar dados!')
       console.error(error)
+
     }
   }
 

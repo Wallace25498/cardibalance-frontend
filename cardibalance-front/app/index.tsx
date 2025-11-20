@@ -16,7 +16,7 @@ const Tab = createBottomTabNavigator()
 
 export default function Index() {
   //abrir tela de login se o usuário não estiver logado 
-  /*const router = useRouter();
+  const router = useRouter();
   const { logged, logout } = useAuth();
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function Index() {
       }
     }, 10);
     return () => clearTimeout(timerId);
-  }, [logged]); */
+  }, [logged]); 
 
 
   return (

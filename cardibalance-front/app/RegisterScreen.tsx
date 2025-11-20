@@ -29,6 +29,7 @@ export default function RegisterScreen() {
     }
     setLoading(true)
     try {
+
       const response = await axios.post('http://localhost:8080/auth/register', {
         nome,
         email,
@@ -37,11 +38,14 @@ export default function RegisterScreen() {
         tipo: 'PACIENTE' // ou outro tipo conforme sua lógica
 
       })
+      
       alert('Cadastro realizado com sucesso!')
       router.push('/LoginPage')
+
     } catch (error: any) {
       console.error('Erro ao cadastrar:', error.response?.data || error.message)
       alert('Erro ao cadastrar!')
+
     } finally {
       setLoading(false)
     }
