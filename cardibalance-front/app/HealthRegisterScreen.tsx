@@ -12,7 +12,17 @@ import axios from 'axios'
 import { AUTH_TOKEN_STORAGE } from '@/storage/storageConfigs'
 import { storageAuthTokenGet } from '@/storage/storageAuthToken'
 
+const formatarDataAtual = () => {
+  const hoje = new Date();
 
+const ano = hoje.getFullYear();
+const mes = String(hoje.getMonth() + 1).padStart(2, "0"); // +1 porque começa em 0
+const dia = String(hoje.getDate()).padStart(2, "0");
+
+const dataFormatada = `${ano}-${mes}-${dia}`;
+
+return dataFormatada;
+}
 interface GlicoseData {
   value: string
   fasting: boolean
@@ -56,12 +66,13 @@ const HealthRegisterScreen: React.FC = () => {
 
   const handleSave = async () => {
     const dados = []
+    const dataAtual= formatarDataAtual();
 
     if (selectedItems.pressao) {
       dados.push({
         valorNum: Number(pressaoData.sistolica),
         valorAux: Number(pressaoData.diastolica),
-        horarioMedicao: `2025-11-11T${pressaoData.hour}:${pressaoData.minute}:00-03:00[America/Sao_Paulo]`,
+        horarioMedicao: `${dataAtual}T${pressaoData.hour}:${pressaoData.minute}:00-03:00[America/Sao_Paulo]`,
         contexto: 'BP',
         observacao: 'Medição de pressão arterial.'
       })
@@ -71,7 +82,7 @@ const HealthRegisterScreen: React.FC = () => {
       dados.push({
         valorNum: Number(glicoseData.value),
         valorAux: 0.0, // ajuste conforme sua lógica
-        horarioMedicao: `2025-11-11T${glicoseData.hour}:${glicoseData.minute}:00-03:00[America/Sao_Paulo]`,
+        horarioMedicao: `${dataAtual}T${glicoseData.hour}:${glicoseData.minute}:00-03:00[America/Sao_Paulo]`,
         contexto: 'GLICEMIA',
         observacao: glicoseData.fasting ? 'Glicemia em jejum.' : 'Glicemia sem jejum.'
       })
@@ -80,12 +91,11 @@ const HealthRegisterScreen: React.FC = () => {
     
     try {
       const token = await storageAuthTokenGet();
-      await axios.post('http://127.0.0.1:8080/medicao', dados,{ headers:{ "Authorization" : `Bearer ${token}` } })
+      await axios.post('http://localhost:8080/medicao', dados,{ headers:{ "Authorization" : `Bearer ${token}` } })
       alert('Dados salvos com sucesso!')
     
     } catch (error: any) {
-
-      alert('Erro ao salvar dados!')
+      alert("Erro ao salvar dados!")
       console.error(error)
 
     }
