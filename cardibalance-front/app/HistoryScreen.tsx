@@ -74,35 +74,40 @@ return resultadoFinal
    const atualizarHistoricoGlicose = async () => {
   try {
         const token = await storageAuthTokenGet();
-        const dados= await axios.get('http://localhost:8080/medicoes?tipo=GLICEMIA&dataInicio=2020-01-01', { headers:{ "Authorization" : `Bearer ${token}` } })
-        const listaMedicoes= dados.data;
-        const ultimo = listaMedicoes[listaMedicoes.length - 1];
-        const penultimo = listaMedicoes[listaMedicoes.length - 2];
-        const horarioUltimo = ultimo.horarioMedicao.split("T")[1].substring(0,5);
-        const dataFormatadaUltimo = formatarData(ultimo.criadoEm);
-        const horarioPenultimo = penultimo.horarioMedicao.split("T")[1].substring(0,5);
-        const dataFormatadaPenultimo = formatarData(penultimo.criadoEm);
+        const dados= await axios.get('http://192.168.0.135:8080/medicoes?tipo=GLICEMIA', { headers:{ "Authorization" : `Bearer ${token}` } })
+        const listaMedicoes = [...dados.data].sort(
+  (a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime());
+        const primeiro = listaMedicoes[0];
+        const segundo= listaMedicoes[1];
+        const horarioPrimeiro = primeiro.horarioMedicao.split("T")[1].substring(0,5);
+        const dataFormatadaPrimeiro = formatarData(primeiro.criadoEm);
+        const horarioSegundo = segundo.horarioMedicao.split("T")[1].substring(0,5);
+        const dataFormatadaSegundo = formatarData(segundo.criadoEm);
   
 
         const leiturasRecentes = [
     {
       id: '1',
-      date: dataFormatadaUltimo,
-      value: ` ${ultimo.valorNum} mg/dL`,
-      time: ` ${horarioUltimo} h` 
+      date: dataFormatadaPrimeiro,
+      value: ` ${primeiro.valorNum} mg/dL`,
+      time: ` ${horarioPrimeiro} h` 
   
     },
     {
       id: '2',
-      date: dataFormatadaPenultimo,
-      value: ` ${penultimo.valorNum} mg/dL`,
-      time: ` ${horarioPenultimo} h` 
+      date: dataFormatadaSegundo,
+      value: ` ${segundo.valorNum} mg/dL`,
+      time: ` ${horarioSegundo} h` 
+      /* id: '2',
+      date: '22 de novembro, 2025 ',
+      value: ` 130 mg/dL`,
+      time: ` 21:00 h*/
     }
   ]
       setGlucoseReadings(leiturasRecentes);
 
         //dados exibidos no console para conferência
-          console.log(JSON.stringify(dados,null,10));
+     console.log(JSON.stringify(listaMedicoes,null,10));
       
       } catch (error: any) {
         
@@ -117,35 +122,40 @@ return resultadoFinal
      const atualizarHistoricoPressao = async () => {
   try {
         const token = await storageAuthTokenGet();
-        const dados= await axios.get('http://localhost:8080/medicoes?tipo=BP&dataInicio=2020-01-01', { headers:{ "Authorization" : `Bearer ${token}` } })
-        const listaMedicoes= dados.data;
-        const ultimo = listaMedicoes[listaMedicoes.length - 1];
-        const penultimo = listaMedicoes[listaMedicoes.length - 2];
-        const horarioUltimo = ultimo.horarioMedicao.split("T")[1].substring(0,5);
-        const dataFormatadaUltimo = formatarData(ultimo.criadoEm);
-        const horarioPenultimo = penultimo.horarioMedicao.split("T")[1].substring(0,5);
-        const dataFormatadaPenultimo = formatarData(penultimo.criadoEm);
+        const dados= await axios.get('http://localhost:8080/medicoes?tipo=BP', { headers:{ "Authorization" : `Bearer ${token}` } })
+       const listaMedicoes = [...dados.data].sort(
+  (a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime());
+        const primeiro = listaMedicoes[0];
+        const segundo= listaMedicoes[1];
+        const horarioPrimeiro = primeiro.horarioMedicao.split("T")[1].substring(0,5);
+        const dataFormatadaPrimeiro = formatarData(primeiro.criadoEm);
+        const horarioSegundo = segundo.horarioMedicao.split("T")[1].substring(0,5);
+        const dataFormatadaSegundo = formatarData(segundo.criadoEm);
   
 
         const leiturasRecentes = [
     {
       id: '1',
-      date: dataFormatadaUltimo,
-      value: ` ${ultimo.valorNum} mmHg`,
-      time: ` ${horarioUltimo} h` 
+      date: dataFormatadaPrimeiro,
+      value: ` ${primeiro.valorNum} mmHg`,
+      time: ` ${horarioPrimeiro} h` 
   
     },
     {
       id: '2',
-      date: dataFormatadaPenultimo,
-      value: ` ${penultimo.valorNum} mmHg`,
-      time: ` ${horarioPenultimo} h` 
+      date: dataFormatadaSegundo,
+      value: ` ${segundo.valorNum} mmHg`,
+      time: ` ${horarioSegundo} h`
+        
+      /*id: '2',
+      date: '22 de novembro, 2025 ',
+      value: ` 127 mmHg`,
+      time: ` 19:00 h`*/
     }
   ]
       setPressaoReadings(leiturasRecentes);
 
-        // const primeiro= dados.data[0];
-          console.log(JSON.stringify(dados,null,10));
+        //  console.log(" listaMedicoes");
       
       } catch (error: any) {
         
@@ -159,6 +169,7 @@ return resultadoFinal
   //função para atualizar as leituras recentes  
   useFocusEffect(
   useCallback(() => {
+    
     atualizarHistoricoGlicose(); // roda toda vez que a tela fica visível
     atualizarHistoricoPressao(); // roda toda vez que a tela fica visível
   }, [])
