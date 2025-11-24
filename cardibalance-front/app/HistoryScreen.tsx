@@ -1,245 +1,233 @@
-import React, { useState,useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   View,
   Text,
   ScrollView,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native'
 import { LineChart } from 'react-native-chart-kit'
 import styles from './styles/HistoryScreen.styles'
 import axios from 'axios'
-import { AUTH_TOKEN_STORAGE } from '@/storage/storageConfigs'
 import { storageAuthTokenGet } from '@/storage/storageAuthToken'
 import { useFocusEffect } from "@react-navigation/native";
 
+// Tipagem exata baseada no seu JSON
+interface Medicao {
+  medicaoId: string;
+  valorNum: number;
+  valorAux: number | null;
+  horarioMedicao: string; // ISO String
+  contexto: 'BP' | 'GLICEMIA';
+  criadoEm: string;
+  observacao: string;
+}
 
 export default function HistoryScreen() {
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'glicose' | 'pressao'>('glicose');
 
-//função para formatar a data das medições
-  const formatarData = (data1: string) =>{
-  const dataFormatada = new Date(data1).toLocaleDateString("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  year: "numeric",
-});
-const partes = dataFormatada.split(" de ");
+  // Estados para Gráficos
+  const [chartLabels, setChartLabels] = useState<string[]>([]);
+  const [chartDataset1, setChartDataset1] = useState<number[]>([0]); // Glicose ou Sistólica
+  const [chartDataset2, setChartDataset2] = useState<number[]>([0]); // Diastólica
 
-const dia = partes[0];      
-const mes = partes[1];      
-const ano = partes[2];      
+  // Estado para Lista (Iniciando VAZIO para não mostrar dados de Julho/2024)
+  const [recentReadings, setRecentReadings] = useState<any[]>([]);
+  
+  // Estado para o Card Principal
+  const [cardDataState, setCardDataState] = useState({
+    value: '--',
+    percentage: '0%'
+  });
 
-const resultadoFinal = `${dia} de ${mes}, ${ano}`;
-
-return resultadoFinal
+  // Formatador de Data (Ex: 23 de novembro, 2025)
+  const formatarDataLegivel = (isoDate: string) => {
+    if (!isoDate) return '--';
+    const date = new Date(isoDate);
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
   }
- 
 
-  const [activeTab, setActiveTab] = useState<'glicose' | 'pressao'>('glicose')
+  // Formatador de Hora (Ex: 15:00 h)
+  const formatarHora = (isoDate: string) => {
+    if (!isoDate) return '--:--';
+    return new Date(isoDate).toLocaleTimeString("pt-BR", {
+        hour: '2-digit',
+        minute: '2-digit'
+    }) + ' h';
+  }
 
-  // Dados do gráfico de Glicose
-  const glucoseData = [115, 120, 118, 110, 105, 130, 115]
-  const weekLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
-
-  // Dados do gráfico de Pressão Arterial (Sistólica)
-  const pressaoSistolicaData = [118, 122, 120, 115, 125, 128, 120]
-
-  // Dados do gráfico de Pressão Arterial (Diastólica)
-  const pressaoDiastolicaData = [75, 78, 76, 72, 80, 82, 78]
-
-  // Leituras recentes de Glicose
-  const [glucoseReadings,setGlucoseReadings] = useState  (  [
-    { id: '1', date: '20 de Julho, 2024', value: '110 mg/dL', time: '8:00 AM' },
-    { id: '2', date: '19 de Julho, 2024', value: '125 mg/dL', time: '9:15 AM' }
-  ])
-
-  // Leituras recentes de Pressão Arterial
-  const [pressaoReadings, setPressaoReadings] = useState([
-    {
-      id: '1',
-      date: '20 de Julho, 2024',
-      value: '120/78 mmHg',
-      time: '8:00 AM'
-    },
-    {
-      id: '2',
-      date: '19 de Julho, 2024',
-      value: '125/80 mmHg',
-      time: '9:15 AM'
-    }
-  ])
-
-  //get para puxar os dados das ultimas medições de glicose 
-
-   const atualizarHistoricoGlicose = async () => {
-  try {
-        const token = await storageAuthTokenGet();
-        const dados= await axios.get('http://192.168.0.135:8080/medicoes?tipo=GLICEMIA', { headers:{ "Authorization" : `Bearer ${token}` } })
-        const listaMedicoes = [...dados.data].sort(
-  (a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime());
-        const primeiro = listaMedicoes[0];
-        const segundo= listaMedicoes[1];
-        const horarioPrimeiro = primeiro.horarioMedicao.split("T")[1].substring(0,5);
-        const dataFormatadaPrimeiro = formatarData(primeiro.criadoEm);
-        const horarioSegundo = segundo.horarioMedicao.split("T")[1].substring(0,5);
-        const dataFormatadaSegundo = formatarData(segundo.criadoEm);
-  
-
-        const leiturasRecentes = [
-    {
-      id: '1',
-      date: dataFormatadaPrimeiro,
-      value: ` ${primeiro.valorNum} mg/dL`,
-      time: ` ${horarioPrimeiro} h` 
-  
-    },
-    {
-      id: '2',
-      date: dataFormatadaSegundo,
-      value: ` ${segundo.valorNum} mg/dL`,
-      time: ` ${horarioSegundo} h` 
-      /* id: '2',
-      date: '22 de novembro, 2025 ',
-      value: ` 130 mg/dL`,
-      time: ` 21:00 h*/
-    }
-  ]
-      setGlucoseReadings(leiturasRecentes);
-
-        //dados exibidos no console para conferência
-     console.log(JSON.stringify(listaMedicoes,null,10));
+  const fetchHistoryData = async () => {
+    setLoading(true);
+    try {
+      const token = await storageAuthTokenGet();
       
-      } catch (error: any) {
+      // Filtros de Data (Últimos 7 dias)
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 6);
+
+      const params = {
+        dataInicio: startDate.toISOString().split('T')[0], 
+        dataFim: endDate.toISOString().split('T')[0],
+        tipo: activeTab === 'glicose' ? 'GLICEMIA' : 'BP'
+      };
+
+      // Nota: Ajuste o IP se necessário (localhost vs IP da máquina)
+      const response = await axios.get('http://localhost:8080/medicoes', { 
+        headers: { "Authorization": `Bearer ${token}` },
+        params: params
+      });
+
+      const data: Medicao[] = response.data;
+
+      // --- 1. Processamento para o Gráfico (Agrupado por Dia) ---
+      const last7DaysMap = new Map<string, { count: number, sumVal1: number, sumVal2: number, label: string }>();
+      const labels: string[] = [];
+
+      // Inicializa os 7 dias com zero
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().split('T')[0]; // YYYY-MM-DD
+        const weekDay = d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
         
-        // Mostrar o token como string. Ajuste a mensagem conforme necessário.
-        alert("Erro ao pegar dados")
-        console.error(error)
-  
+        labels.push(weekDay);
+        last7DaysMap.set(key, { count: 0, sumVal1: 0, sumVal2: 0, label: weekDay });
       }
-    }
 
-  //get para puxar os dados das ultimas medições de pressão arterial
-     const atualizarHistoricoPressao = async () => {
-  try {
-        const token = await storageAuthTokenGet();
-        const dados= await axios.get('http://localhost:8080/medicoes?tipo=BP', { headers:{ "Authorization" : `Bearer ${token}` } })
-       const listaMedicoes = [...dados.data].sort(
-  (a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime());
-        const primeiro = listaMedicoes[0];
-        const segundo= listaMedicoes[1];
-        const horarioPrimeiro = primeiro.horarioMedicao.split("T")[1].substring(0,5);
-        const dataFormatadaPrimeiro = formatarData(primeiro.criadoEm);
-        const horarioSegundo = segundo.horarioMedicao.split("T")[1].substring(0,5);
-        const dataFormatadaSegundo = formatarData(segundo.criadoEm);
-  
+      setChartLabels(labels);
 
-        const leiturasRecentes = [
-    {
-      id: '1',
-      date: dataFormatadaPrimeiro,
-      value: ` ${primeiro.valorNum} mmHg`,
-      time: ` ${horarioPrimeiro} h` 
-  
-    },
-    {
-      id: '2',
-      date: dataFormatadaSegundo,
-      value: ` ${segundo.valorNum} mmHg`,
-      time: ` ${horarioSegundo} h`
-        
-      /*id: '2',
-      date: '22 de novembro, 2025 ',
-      value: ` 127 mmHg`,
-      time: ` 19:00 h`*/
-    }
-  ]
-      setPressaoReadings(leiturasRecentes);
+      // Preenche com os dados da API
+      data.forEach(item => {
+        const itemDate = item.horarioMedicao.split('T')[0];
+        if (last7DaysMap.has(itemDate)) {
+          const current = last7DaysMap.get(itemDate)!;
+          // Ignora valores zerados ou espúrios se necessário (ex: valorNum < 10)
+          if (item.valorNum > 10) { 
+            current.count += 1;
+            current.sumVal1 += item.valorNum;
+            current.sumVal2 += (item.valorAux || 0);
+          }
+        }
+      });
 
-        //  console.log(" listaMedicoes");
-      
-      } catch (error: any) {
-        
-        // Mostrar o token como string. Ajuste a mensagem conforme necessário.
-        alert("Erro ao pegar dados")
-        console.error(error)
-  
+      // Gera arrays finais
+      const data1: number[] = [];
+      const data2: number[] = [];
+
+      last7DaysMap.forEach((val) => {
+        if (val.count > 0) {
+          data1.push(Math.round(val.sumVal1 / val.count));
+          data2.push(Math.round(val.sumVal2 / val.count));
+        } else {
+          data1.push(0); 
+          data2.push(0);
+        }
+      });
+
+      setChartDataset1(data1);
+      setChartDataset2(data2);
+
+      // --- 2. Processamento para a Lista (Ordenação Descendente) ---
+      const sortedData = [...data].sort((a, b) => 
+        new Date(b.horarioMedicao).getTime() - new Date(a.horarioMedicao).getTime()
+      );
+
+      const formattedList = sortedData.map(item => {
+        let displayValue = '';
+        if (activeTab === 'glicose') {
+            displayValue = `${item.valorNum} mg/dL`;
+        } else {
+            // CORREÇÃO AQUI: Exibir Sistólica/Diastólica
+            const diastolica = item.valorAux ? Math.round(item.valorAux) : 0;
+            displayValue = `${Math.round(item.valorNum)}/${diastolica} mmHg`;
+        }
+
+        return {
+            id: item.medicaoId,
+            date: formatarDataLegivel(item.horarioMedicao), // Usa a data da medição
+            time: formatarHora(item.horarioMedicao),
+            value: displayValue
+        };
+      });
+
+      setRecentReadings(formattedList);
+
+      // --- 3. Atualizar Card Principal (Última medição) ---
+      if (sortedData.length > 0) {
+        const latest = formattedList[0]; // Já formatado
+        setCardDataState({
+            value: latest.value,
+            percentage: '+0%' // Você pode implementar cálculo real aqui se quiser
+        });
+      } else {
+          setCardDataState({ value: '--', percentage: '0%' });
       }
-    }
 
-  //função para atualizar as leituras recentes  
+    } catch (error) {
+      console.error("Erro ao buscar histórico:", error);
+      alert("Não foi possível carregar o histórico.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useFocusEffect(
-  useCallback(() => {
-    
-    atualizarHistoricoGlicose(); // roda toda vez que a tela fica visível
-    atualizarHistoricoPressao(); // roda toda vez que a tela fica visível
-  }, [])
-);
+    useCallback(() => {
+      fetchHistoryData();
+    }, [activeTab])
+  );
 
-  // Largura da tela com padding
-  const screenWidth = Dimensions.get('window').width - 40
+  const screenWidth = Dimensions.get('window').width - 40;
 
-  // Renderiza o gráfico baseado na aba ativa
+  // Renderização do Gráfico
   const renderChart = () => {
+    if (chartLabels.length === 0) return <ActivityIndicator color="#007AFF" />;
+    
+    // Configuração comum
+    const chartConfig = {
+      backgroundColor: '#ffffff',
+      backgroundGradientFrom: '#ffffff',
+      backgroundGradientTo: '#ffffff',
+      decimalPlaces: 0,
+      color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(119, 119, 119, ${opacity})`,
+      style: { borderRadius: 8 },
+      propsForDots: { r: '4', strokeWidth: '2', stroke: '#007AFF', fill: '#007AFF' },
+      propsForBackgroundLines: { strokeDasharray: '', stroke: '#e3e3e3', strokeWidth: 1 }
+    };
+
     if (activeTab === 'glicose') {
       return (
         <LineChart
-          data={{
-            labels: weekLabels,
-            datasets: [
-              {
-                data: glucoseData
-              }
-            ]
-          }}
+          data={{ labels: chartLabels, datasets: [{ data: chartDataset1 }] }}
           width={screenWidth - 32}
           height={150}
-          chartConfig={{
-            backgroundColor: '#ffffff',
-            backgroundGradientFrom: '#ffffff',
-            backgroundGradientTo: '#ffffff',
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(119, 119, 119, ${opacity})`,
-            style: {
-              borderRadius: 8
-            },
-            propsForDots: {
-              r: '5',
-              strokeWidth: '2',
-              stroke: '#007AFF',
-              fill: '#007AFF'
-            },
-            propsForBackgroundLines: {
-              strokeDasharray: '',
-              stroke: '#e3e3e3',
-              strokeWidth: 1
-            }
-          }}
+          chartConfig={chartConfig}
           bezier
           style={styles.chart}
-          withInnerLines={true}
-          withOuterLines={true}
-          withVerticalLines={false}
-          withHorizontalLines={true}
-          withVerticalLabels={true}
-          withHorizontalLabels={true}
-          fromZero={false}
         />
-      )
+      );
     } else {
       return (
         <LineChart
           data={{
-            labels: weekLabels,
+            labels: chartLabels,
             datasets: [
               {
-                data: pressaoSistolicaData,
-                color: (opacity = 1) => `rgba(255, 59, 48, ${opacity})`, // Vermelho para sistólica
+                data: chartDataset1, // Sistólica
+                color: (opacity = 1) => `rgba(255, 59, 48, ${opacity})`, 
                 strokeWidth: 2
               },
               {
-                data: pressaoDiastolicaData,
-                color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`, // Azul para diastólica
+                data: chartDataset2, // Diastólica
+                color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
                 strokeWidth: 2
               }
             ],
@@ -247,106 +235,53 @@ return resultadoFinal
           }}
           width={screenWidth - 32}
           height={150}
-          chartConfig={{
-            backgroundColor: '#ffffff',
-            backgroundGradientFrom: '#ffffff',
-            backgroundGradientTo: '#ffffff',
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(119, 119, 119, ${opacity})`,
-            style: {
-              borderRadius: 8
-            },
-            propsForDots: {
-              r: '4',
-              strokeWidth: '2'
-            },
-            propsForBackgroundLines: {
-              strokeDasharray: '',
-              stroke: '#e3e3e3',
-              strokeWidth: 1
-            }
-          }}
+          chartConfig={chartConfig}
           bezier
           style={styles.chart}
-          withInnerLines={true}
-          withOuterLines={true}
-          withVerticalLines={false}
-          withHorizontalLines={true}
-          withVerticalLabels={true}
-          withHorizontalLabels={true}
-          fromZero={false}
         />
-      )
+      );
     }
+  };
+
+  const getStaticCardData = () => {
+    return activeTab === 'glicose' 
+      ? { subtitle: 'Níveis de Glicose', period: 'Últimos 7 dias' }
+      : { subtitle: 'Pressão Arterial', period: 'Últimos 7 dias' };
   }
-  
-
-  // Dados do card principal baseado na aba ativa
-  const getCardData = () => {
-
- 
-    if (activeTab === 'glicose') {
-      return {
-        subtitle: 'Níveis de Glicose',
-        value: '120 mg/dL',
-        period: 'Últimos 7 dias',
-        percentage: '+5%'
-      }
-    } else {
-      return {
-        subtitle: 'Pressão Arterial',
-        value: '120/78 mmHg',
-        period: 'Últimos 7 dias',
-        percentage: '+2%'
-      }
-    }
-  }
-
-  const cardData = getCardData()
-  const readings = activeTab === 'glicose' ? glucoseReadings : pressaoReadings
+  const staticData = getStaticCardData();
 
   return (
-    
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
       <Text style={styles.headerTitle}>Histórico</Text>
 
-      {/* Tabs */}
       <View style={styles.tabContainer}>
         <TouchableOpacity onPress={() => setActiveTab('glicose')}>
-          <Text
-            style={[styles.tab, activeTab === 'glicose' && styles.activeTab]}
-          >
-            Glicose
-          </Text>
+          <Text style={[styles.tab, activeTab === 'glicose' && styles.activeTab]}>Glicose</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setActiveTab('pressao')}>
-          <Text
-            style={[styles.tab, activeTab === 'pressao' && styles.activeTab]}
-          >
-            Pressão Arterial
-          </Text>
+          <Text style={[styles.tab, activeTab === 'pressao' && styles.activeTab]}>Pressão Arterial</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Card Principal */}
       <View style={styles.mainCard}>
-        <Text style={styles.cardSubtitle}>{cardData.subtitle}</Text>
-        <Text style={styles.glucoseValue}>{cardData.value}</Text>
-        <Text style={styles.periodText}>
-          {cardData.period}{' '}
-          <Text style={styles.percentageText}>{cardData.percentage}</Text>
-        </Text>
-
-        {/* Gráfico */}
+        <Text style={styles.cardSubtitle}>{staticData.subtitle}</Text>
+        {loading && recentReadings.length === 0 ? (
+            <ActivityIndicator color="#000" style={{ marginVertical: 10 }} />
+        ) : (
+            <>
+                <Text style={styles.glucoseValue}>{cardDataState.value}</Text>
+                <Text style={styles.periodText}>
+                    {staticData.period} <Text style={styles.percentageText}>{cardDataState.percentage}</Text>
+                </Text>
+            </>
+        )}
         <View style={styles.chartContainer}>{renderChart()}</View>
       </View>
 
-      {/* Leituras Recentes */}
       <Text style={styles.sectionTitle}>Leituras Recentes</Text>
 
-      {readings.map(reading => (
+      {/* Lista de Leituras */}
+      {recentReadings.map(reading => (
         <View key={reading.id} style={styles.readingCard}>
           <View style={styles.readingInfo}>
             <Text style={styles.readingDate}>{reading.date}</Text>
@@ -355,8 +290,7 @@ return resultadoFinal
           <Text style={styles.readingTime}>{reading.time}</Text>
         </View>
       ))}
-
-      {/* Espaçamento inferior para navegação */}
+      
       <View style={styles.bottomSpacer} />
     </ScrollView>
   )
