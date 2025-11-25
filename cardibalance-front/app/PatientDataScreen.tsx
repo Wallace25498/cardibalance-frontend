@@ -1,4 +1,4 @@
-import { storageAuthTokenGet } from '@/storage/storageAuthToken';
+import { storageAuthTokenGet,storageUserGet } from '@/storage/storageAuthToken';
 import axios from 'axios';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -18,10 +18,10 @@ export default function FeaturesScreen() {
     const [comorbidades, setComorbidades] = useState('')
     const [sexo, setSexo] = useState('')
     const [dataNascimento, setData] = useState('')
-   
+
 
     const handleRegister = async () => {
-
+       
     if (!pesoKg || !alturaCm || !tipoDiabetes || !comorbidades || !sexo || !dataNascimento) {
       alert('Preencha todos os campos!')
       return
@@ -37,7 +37,7 @@ export default function FeaturesScreen() {
 
       const token = await storageAuthTokenGet();
 
-      console.log("TOKEN RECUPERADO:", token);
+      
       if (!token) {
         alert('Token não encontrado')
         return
@@ -60,7 +60,7 @@ export default function FeaturesScreen() {
   
 
       alert('Dados salvos com sucesso!')
-      router.replace('./loginPage')
+      router.replace('/')
 
     } catch (error: any) {
       console.error('Erro ao cadastrar:', error.response?.data || error.message)
