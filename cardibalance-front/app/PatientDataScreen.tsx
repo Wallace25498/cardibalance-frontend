@@ -1,57 +1,74 @@
 import React, { useState } from 'react'
 import {
+  View,
   Text,
   TextInput,
-  TouchableOpacity,
-  SafeAreaView,
-  View,
-  Pressable,
-  Platform
-} from 'react-native'
-import styles from './styles/PatientDataScreen.styles'
+  TouchableOpacity
+} from 'react-native';
+import axios from 'axios';
+import {  router } from 'expo-router';
+import styles from './styles/PatientDataScreen.styles';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
+import { storageAuthTokenGet } from '@/storage/storageAuthToken';
+import { MaskedTextInput } from 'react-native-mask-text';
 
 export default function FeaturesScreen() {
-  {/*date timepicker */ }
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  {/*Variavel de armazenamento de genero */ }
-  const [selectedGender, setSelectedGender] = useState('');
+   const [pesoKg, setPeso] = useState('')
+    const [alturaCm, setAlturaCm] = useState('')
+    const [tipoDiabetes, setDiabetes] = useState('')
+    const [comorbidades, setComorbidades] = useState('')
+    const [sexo, setSexo] = useState('')
+    const [dataNascimento, setData] = useState('')
+   
 
-  {/*funções para o date timepicker */ }
-  const toggleDatePicker = () => {
-    setShowPicker(!showPicker);
-  }
+    const handleRegister = async () => {
 
-  const onChange = (event: any, selectedDate?: Date) => {
-    if (event.type === "set") {
-      const currentDate = selectedDate || date;
-      setDate(currentDate);
-
-      if (Platform.OS === "android") {
-        toggleDatePicker();
-        setDateOfBirth(formateDate(date));
-      }
-    } else {
-      toggleDatePicker();
+    if (!pesoKg || !alturaCm || !tipoDiabetes || !comorbidades || !sexo || !dataNascimento) {
+      alert('Preencha todos os campos!')
+      return
     }
-  };
-  const confirmIOSDate = () => {
-    setDateOfBirth(formateDate(date));
-    toggleDatePicker();
-  };
+    try {
+     
+      // Converter data de DD/MM/YYYY para YYYY-MM-DD (se necessário)
+      let dataFormatada = dataNascimento
+      if (dataNascimento.includes('/')) {
+        const [dia, mes, ano] = dataNascimento.split('/')
+        dataFormatada = `${ano}-${mes}-${dia}`
+      }
 
-  //formatar data e retornar a string: dd/mm/aa
-  const formateDate = (rawDate: string | number | Date) => {
-    let date = new Date(rawDate);
+      const token = await storageAuthTokenGet();
+      if (!token) {
+        alert('Token não encontrado')
+        return
+      }
+ 
+      const response = await axios.post('http://localhost:8080/paciente', {
+        dataNascimento: dataFormatada,
+        sexo,
+        pesoKg: Number(pesoKg),
+        alturaCm: Number(alturaCm),
+        tipoDiabetes,
+        comorbidades,
+        metaGlicemiaMin: 70.0,
+        metaGlicemiaMax: 140.0,
+        metaSysbp: 120.0,
+        metaDiabp: 80.0,
+        zonaHoraria: "America/Sao_Paulo" 
 
-    let ano = date.getFullYear();
-    let mes = date.getMonth() + 1;
-    let dia = date.getDate();
-    return `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${ano}`
+      }, {headers: {'Authorization': `Bearer ${token}`}} );
+  
+
+      alert('Dados salvos com sucesso!')
+      router.replace('./loginPage')
+
+    } catch (error: any) {
+      console.error('Erro ao cadastrar:', error.response?.data || error.message)
+      alert('Erro ao cadastrar!')
+     
+
+    } 
   }
+
 
   return (
     <View style={styles.container}>
@@ -63,32 +80,48 @@ export default function FeaturesScreen() {
         placeholder="Peso (Kg)"
         style={styles.input}
         placeholderTextColor="grey"
+        onChangeText={setPeso}
       />
       <TextInput
-        placeholder="Altura (m)"
+        placeholder="Altura (Cm)"
         style={styles.input}
         placeholderTextColor="grey"
+        onChangeText={setAlturaCm}
       />
+      <TextInput
+        placeholder="Tipo de Diabetes"
+        style={styles.input}
+        placeholderTextColor="grey"
+        onChangeText={setDiabetes}
+      />
+
+       <TextInput
+        placeholder="Comorbidades"
+        style={styles.input}
+        placeholderTextColor="grey"
+        onChangeText={setComorbidades}
+      />
+
 
       {/* opções de Genero */}
       <View style={styles.gender}>
         <TouchableOpacity
           style={[
             styles.secundaryGenderButton,
-            selectedGender === "Masculino" && styles.primaryGenderButton
+            sexo === "Masculino" && styles.primaryGenderButton
           ]}
-          onPress={() => setSelectedGender("Masculino")}
+          onPress={() => setSexo("Masculino")}
         >
-          <Text style={[selectedGender === "Masculino" && styles.primaryGenderButtonText]}
+          <Text style={[sexo === "Masculino" && styles.primaryGenderButtonText]}
           >Sexo Masculino</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[
           styles.secundaryGenderButton,
-          selectedGender === "Feminino" && styles.primaryGenderButton
+          sexo === "Feminino" && styles.primaryGenderButton
         ]}
-          onPress={() => setSelectedGender("Feminino")}>
-          <Text style={[selectedGender === "Feminino" && styles.primaryGenderButtonText]}>Sexo Feminino</Text>
+          onPress={() => setSexo("Feminino")}>
+          <Text style={[sexo === "Feminino" && styles.primaryGenderButtonText]}>Sexo Feminino</Text>
         </TouchableOpacity>
 
       </View>
@@ -97,46 +130,21 @@ export default function FeaturesScreen() {
 
       <View style={styles.date}>
         <Text style={styles.dateTitle}>Data de Nascimento:</Text>
-
-        {showPicker && (
-          <DateTimePicker
-            mode="date"
-            display="spinner"
-            value={date}
-            onChange={onChange}
-            style={styles.datepicker}
-          />
-        )}
-        {showPicker && Platform.OS === "ios" && (
-          <View>
-            <TouchableOpacity
-              onPress={toggleDatePicker}>
-              <Text>Cancelar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={confirmIOSDate}>
-              <Text>Confirmar</Text>
-            </TouchableOpacity>
-          </View>
-
-
-        )}
-        {!showPicker && (<Pressable onPress={toggleDatePicker}><TextInput
-          value={dateOfBirth}
-          onChangeText={setDateOfBirth}
-          placeholder='dd/mm/aa'
-          style={styles.inputdate}
-          placeholderTextColor="grey"
-          editable={false}
-          onPressIn={toggleDatePicker}
-        /></Pressable>)}
+          <MaskedTextInput
+          mask="99/99/9999"
+              placeholder="DD/MM/YYYY"
+              style={[styles.input, { marginBottom: 8 }]}
+              placeholderTextColor="grey"
+              onChangeText={setData}
+              value={dataNascimento}
+            />
 
 
       </View>
 
       {/* Botão de Confirmar */}
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button}
+        onPress={handleRegister}>
         <Text style={styles.buttonText}>Confirmar</Text>
       </TouchableOpacity>
 
