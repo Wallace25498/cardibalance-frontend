@@ -1,15 +1,15 @@
+import { storageAuthTokenSave, storageUserSave } from '@/storage/storageAuthToken'
+import axios from 'axios'
+import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import {
-  View,
   Text,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  View
 } from 'react-native'
-import axios from 'axios'
-import styles from './styles/RegisterScreen.styles'
-import { useRouter } from 'expo-router'
 import { useAuth } from "./context/AuthContext"
-import { storageAuthSave } from '@/storage/storageAuthToken'
+import styles from './styles/RegisterScreen.styles'
 
 export default function RegisterScreen() {
 
@@ -50,7 +50,9 @@ export default function RegisterScreen() {
         password: senha
       })
       login();
-      await storageAuthSave(response.data.user, response.data.token)
+      await storageAuthTokenSave(response.data.token)
+
+      await storageUserSave(response.data.user)
       router.push('/PatientDataScreen')
 
     } catch (error: any) {
