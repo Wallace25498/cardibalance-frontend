@@ -100,6 +100,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.5
+  },
+  loggof:{
+    marginLeft: "auto",
+    marginRight: 20 ,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height:55,
+    width:45,
+    backgroundColor: '#c6ced1c9',  // cor da borda
+    borderWidth: 3,        
+    borderColor: '#000',   
+    borderRadius: 8,
+    
+
+  },
+
+  loggofButton:{
+  justifyContent: 'center',
+  alignItems: 'center',
+  height:55,
+  width:55
+  
+  },
+  image : {
+
+     height:35,
+    width:25,
   }
 })
 

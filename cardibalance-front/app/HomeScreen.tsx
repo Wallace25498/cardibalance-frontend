@@ -12,11 +12,19 @@ import {
 } from 'react-native'
 import styles from './styles/HomeScreen.styles'
 
+import { useAuth } from "./context/AuthContext"
 // Import das funções de storage atualizadas
 import { storageAuthTokenGet, storageUserGet } from '@/storage/storageAuthToken'
 
 export default function HomeScreen() {
   const router = useRouter()
+   const { logged, logout } = useAuth();
+
+   function handleLogout() {
+    logout();
+    router.replace("./login");
+  }
+   
   
   // Estados
   const [userName, setUserName] = useState('Visitante')
@@ -122,7 +130,18 @@ export default function HomeScreen() {
         <View>
           <Text style={{fontSize: 16, color: '#666'}}>Olá,</Text>
           <Text style={styles.welcome}>{userName}</Text>
+          
         </View>
+        <View style={styles.loggof}>
+        <TouchableOpacity 
+        onPress={logout}
+        style={styles.loggofButton}>
+          <Image
+  source={require('../assets/images/logout.png')}
+  style={styles.image}
+/>
+        </TouchableOpacity>
+         </View>
       </View>
 
       {/* Visão Geral */}
