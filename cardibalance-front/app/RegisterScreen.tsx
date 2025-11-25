@@ -8,8 +8,11 @@ import {
 import axios from 'axios'
 import styles from './styles/RegisterScreen.styles'
 import { useRouter } from 'expo-router'
+import { useAuth } from "./context/AuthContext"
+import { storageAuthSave } from '@/storage/storageAuthToken'
 
 export default function RegisterScreen() {
+
   const router = useRouter()
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -17,6 +20,7 @@ export default function RegisterScreen() {
   const [confirmarSenha, setConfirmarSenha] = useState('')
   const [cpf, setCpf] = useState('')
   const [loading, setLoading] = useState(false)
+  const { login } = useAuth();
 
   const handleRegister = async () => {
     if (!nome || !email || !senha || !confirmarSenha || !cpf) {
@@ -40,7 +44,14 @@ export default function RegisterScreen() {
       })
       
       alert('Cadastro realizado com sucesso!')
-      router.push('/LoginPage')
+
+     const response2 = await axios.post('http://localhost:8080/auth/login', {
+        email: email,
+        password: senha
+      })
+      login();
+      await storageAuthSave(response.data.user, response.data.token)
+      router.push('/PatientDataScreen')
 
     } catch (error: any) {
       console.error('Erro ao cadastrar:', error.response?.data || error.message)
