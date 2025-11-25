@@ -1,27 +1,40 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import { AUTH_TOKEN_STORAGE, USER_STORAGE } from "@/storage/storageConfigs";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { AUTH_TOKEN_STORAGE } from "@/storage/storageConfigs";
+// --- GESTÃO DO TOKEN ---
 
-type StorageAuthTokenProps = {
-  token : string
+export async function storageAuthTokenSave(token: string) {
+  await AsyncStorage.setItem(AUTH_TOKEN_STORAGE, token);
 }
 
-// Funções relacionadas ao Gerenciamento do TOKEN armazenado
-//salva o token
-export async function storageAuthSave(p0: string, token: StorageAuthTokenProps){
-  await AsyncStorage.setItem(AUTH_TOKEN_STORAGE, JSON.stringify(token))
-}
-
-//busca o token no armazenamento local
-export async function storageAuthTokenGet (){
-  const response = await AsyncStorage.getItem(AUTH_TOKEN_STORAGE);
-
-  const token : StorageAuthTokenProps = response ? JSON.parse(response) : {}
-
+export async function storageAuthTokenGet() {
+  const token = await AsyncStorage.getItem(AUTH_TOKEN_STORAGE);
   return token;
 }
 
-//apaga o token quando deslogar
-export async function storageAuthRemove() {
-  await AsyncStorage.removeItem(AUTH_TOKEN_STORAGE)
+export async function storageAuthTokenRemove() {
+  await AsyncStorage.removeItem(AUTH_TOKEN_STORAGE);
+}
+
+// --- GESTÃO DO USUÁRIO (Novo!) ---
+
+export interface UserDTO {
+  name: string;
+  email: string;
+  role: string;
+}
+
+export async function storageUserSave(user: UserDTO) {
+  // Converte o objeto para string JSON antes de salvar
+  await AsyncStorage.setItem(USER_STORAGE, JSON.stringify(user));
+}
+
+export async function storageUserGet() {
+  const storage = await AsyncStorage.getItem(USER_STORAGE);
+  const user: UserDTO = storage ? JSON.parse(storage) : {};
+  return user;
+}
+
+export async function storageUserRemove() {
+  await AsyncStorage.removeItem(USER_STORAGE);
 }
