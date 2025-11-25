@@ -50,9 +50,9 @@ export default function RegisterScreen() {
         password: senha
       })
       login();
-      await storageAuthTokenSave(response.data.token)
+      await storageAuthTokenSave(response2.data.token)
 
-      await storageUserSave(response.data.user)
+      await storageUserSave(response2.data.user)
       router.push('/PatientDataScreen')
 
     } catch (error: any) {

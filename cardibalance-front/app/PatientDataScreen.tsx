@@ -1,16 +1,15 @@
-import React, { useState } from 'react'
+import { storageAuthTokenGet } from '@/storage/storageAuthToken';
+import axios from 'axios';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
 import {
-  View,
   Text,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  View
 } from 'react-native';
-import axios from 'axios';
-import {  router } from 'expo-router';
-import styles from './styles/PatientDataScreen.styles';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { storageAuthTokenGet } from '@/storage/storageAuthToken';
 import { MaskedTextInput } from 'react-native-mask-text';
+import styles from './styles/PatientDataScreen.styles';
 
 export default function FeaturesScreen() {
    const [pesoKg, setPeso] = useState('')
@@ -37,6 +36,8 @@ export default function FeaturesScreen() {
       }
 
       const token = await storageAuthTokenGet();
+
+      console.log("TOKEN RECUPERADO:", token);
       if (!token) {
         alert('Token não encontrado')
         return
