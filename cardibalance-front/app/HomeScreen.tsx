@@ -105,10 +105,16 @@ export default function HomeScreen() {
 
   // Atualiza ao entrar na tela
   useFocusEffect(
+
     useCallback(() => {
+      if (!logged) {
+        router.replace("/LoginPage");
+        return;
+      }
       fetchUserData();
       fetchDashboardData();
-    }, [])
+    }, []) 
+
   );
 
   const onRefresh = () => {
