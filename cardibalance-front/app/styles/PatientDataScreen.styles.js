@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   },
   primaryGenderButton: {
      height: 54,
-    width: 176,
+    width: 156,
     backgroundColor: '#F0F2F5',
     padding: 16,
     borderRadius: 8,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
 
   secundaryGenderButton:{
     height: 54,
-    width: 176,
+    width: 156,
     backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 8,
@@ -75,17 +75,33 @@ const styles = StyleSheet.create({
   },
 
   date: {
-    flexDirection: 'row',
+    
+    flexDirection: 'column',
     justifyContent: 'flex-start',
     marginTop: 10,
   
   },
   dateTitle: {
-    textAlign: 'center',
+
     fontSize: 16,
     color:'#61758A',
     fontWeight: 'regular',
     marginBottom: 20
+  },
+   inputdate: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+    color: '#333',
+  },
+  datepicker: {
+    height: 120 ,
+    marginTop: -10,
+
   }
  
 })
