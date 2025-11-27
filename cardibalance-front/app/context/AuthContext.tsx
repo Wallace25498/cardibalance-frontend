@@ -1,6 +1,7 @@
 //Authcontext para confirmação se usuario está logado no sistema
 import { createContext, useContext, useState, ReactNode } from "react";
-
+import { storageAuthTokenRemove } from '@/storage/storageAuthToken';
+import { useFocusEffect, useRouter } from 'expo-router'
 type AuthContextType = {
   logged: boolean;
   login: () => void;
@@ -18,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   function logout() {
     setLogged(false);
+    storageAuthTokenRemove();
   }
 
   return (

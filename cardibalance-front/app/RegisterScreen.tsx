@@ -1,15 +1,18 @@
+import { storageAuthTokenSave, storageUserSave } from '@/storage/storageAuthToken'
+import axios from 'axios'
+import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import {
-  View,
   Text,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  View
 } from 'react-native'
-import axios from 'axios'
+import { useAuth } from "./context/AuthContext"
 import styles from './styles/RegisterScreen.styles'
-import { useRouter } from 'expo-router'
 
 export default function RegisterScreen() {
+
   const router = useRouter()
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -17,6 +20,7 @@ export default function RegisterScreen() {
   const [confirmarSenha, setConfirmarSenha] = useState('')
   const [cpf, setCpf] = useState('')
   const [loading, setLoading] = useState(false)
+  const { login } = useAuth();
 
   const handleRegister = async () => {
     if (!nome || !email || !senha || !confirmarSenha || !cpf) {
@@ -29,6 +33,7 @@ export default function RegisterScreen() {
     }
     setLoading(true)
     try {
+
       const response = await axios.post('http://localhost:8080/auth/register', {
         nome,
         email,
@@ -37,11 +42,24 @@ export default function RegisterScreen() {
         tipo: 'PACIENTE' // ou outro tipo conforme sua lógica
 
       })
+      
       alert('Cadastro realizado com sucesso!')
-      router.push('/LoginPage')
+
+     const response2 = await axios.post('http://localhost:8080/auth/login', {
+        email: email,
+        password: senha
+      })
+      login();
+       const { token, userInfo } = response2.data;
+      await storageAuthTokenSave(token)
+ 
+      await storageUserSave(userInfo);
+      router.push('/PatientDataScreen')
+
     } catch (error: any) {
       console.error('Erro ao cadastrar:', error.response?.data || error.message)
       alert('Erro ao cadastrar!')
+
     } finally {
       setLoading(false)
     }
