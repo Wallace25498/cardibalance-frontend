@@ -165,3 +165,19 @@ git push origin feature/nome-da-feature
 ```
 
 Em seguida, abra um Pull Request no GitHub.
+
+---
+
+## 👥 Autores
+
+- PORTUGAL, Wallace
+- SILVA, Thiago
+- SILVA, Kaique Godoy
+- SOUSA, Igor Marques de
+- SILVA, Fellipe Gabriel Alves da
+- VARELA, Andressa Araujo
+
+**Orientador:** Prof. Me. Paulo Sergio Rangel Garcia
+
+Centro Universitário das Faculdades Metropolitanas Unidas – FMU, Bacharelado em Ciências da
+Computação. São Paulo, SP, Brasil.
